@@ -1,0 +1,31 @@
+---
+- name: update ssh ports
+  hosts: ssh-block
+  become: yes
+  tasks:
+    - name: "apt-get update"
+      apt:
+       update_cache: yes
+
+    - name: install geoip package
+      apt:
+        name: geoip-bin
+
+    - name: "install geoip database"
+      apt:
+        name: geoip-database 
+
+    - name: "copy the script"
+      copy: 
+        src: /home/ubuntu/sshfilter.sh 
+        dest: /usr/local/bin/sshfilter.sh
+  
+    - name: "make the script exec"
+      shell: chmod 775 /usr/local/bin/sshfilter.sh    
+             
+    - name: "append to /etc/hosts.deny"
+      shell:  "echo sshd: ALL >> /etc/hosts.deny"
+  
+    - name: "append to /etc/hosts.allow"
+      shell:  "echo sshd: ALL: aclexec /usr/local/bin/sshfilter.sh %a >> /etc/hosts.allow"
+ 
